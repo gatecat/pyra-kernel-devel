@@ -110,6 +110,12 @@ static int omap_enter_idle_smp(struct cpuidle_device *dev,
 	struct idle_statedata *cx = state_ptr + index;
 	unsigned long flag;
 
+	/* Enter broadcast mode for periodic timers */
+	tick_broadcast_enable();
+
+	/* Enter broadcast mode for one-shot timers */
+	tick_broadcast_enter();
+
 	raw_spin_lock_irqsave(&mpu_lock, flag);
 	cx->mpu_state_vote++;
 	if (cx->mpu_state_vote == num_online_cpus()) {
@@ -125,6 +131,8 @@ static int omap_enter_idle_smp(struct cpuidle_device *dev,
 		omap_set_pwrdm_state(mpu_pd, PWRDM_POWER_ON);
 	cx->mpu_state_vote--;
 	raw_spin_unlock_irqrestore(&mpu_lock, flag);
+
+	tick_broadcast_exit();
 
 	return index;
 }
