@@ -114,7 +114,7 @@
 		compatible = "hdmi-connector";
 		label = "hdmi";
 
-		type = "b";
+		type = "d";
 
 		port {
 			hdmi_connector_in: endpoint {
