@@ -48,11 +48,6 @@
 		vin-supply = <&otg_reg>;	/* request otg booster of bq24297 */
 	};
 
-	pyra-lid-wakeup {
-		wwan_wakeup {
-			status = "okay";	/* we have now connected RING0 of PLS8 */
-		};
-	};
 };
 
 &gpio99 {
