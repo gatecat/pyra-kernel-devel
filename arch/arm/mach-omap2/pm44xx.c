@@ -180,6 +180,9 @@ static const struct static_dep_map omap4_static_dep_map[] = {
 
 static const struct static_dep_map omap5_dra7_static_dep_map[] = {
 	{.from = "mpu_clkdm", .to = "emif_clkdm"},
+	{.from = "mpu_clkdm", .to = "l4cfg_clkdm"},
+	{.from = "mpu_clkdm", .to = "l3main1_clkdm"},
+	{.from = "mpu_clkdm", .to = "l3main2_clkdm"},
 	{.from  = NULL} /* TERMINATION */
 };
 
