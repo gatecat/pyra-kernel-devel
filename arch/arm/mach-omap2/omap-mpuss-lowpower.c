@@ -258,6 +258,27 @@ int omap4_enter_lowpower(unsigned int cpu, unsigned int power_state)
 	pwrdm_pre_transition(NULL);
 
 	/*
+	 * HACK: COBRA-1.0BUG00167: Disable L1 cache before WFI
+	 * When data caching is disabled, no new cache lines are allocated to
+	 * the L1 data cache and L2 cache because of requests from that
+	 * processor. Other L1 caches will not allocate lines from caches
+	 * with C-bit disabled L1 memory is now Write-Back No-Allocate mode.
+	 * When CPU comes out of WFI, L1 data cache is re-enabled
+	 */
+	if (soc_is_omap54xx()) {
+		void __iomem *base = sar_base;
+
+		base += cpu ? OMAP5_C_BIT_HACK_CPU1 : OMAP5_C_BIT_HACK_CPU0;
+
+		/* Enable HACK logic only for INA/RET */
+		if (power_state == PWRDM_POWER_INACTIVE ||
+			power_state == PWRDM_POWER_RET)
+			writel_relaxed(0x1, base);
+		else
+			writel_relaxed(0x0, base);
+	}
+
+	/*
 	 * Check MPUSS next state and save interrupt controller if needed.
 	 * In MPUSS OSWR or device OFF, interrupt controller  contest is lost.
 	 */
@@ -434,6 +455,7 @@ int __init omap4_mpuss_init(void)
 		omap_pm_ops.hotplug_restart = omap4_secondary_startup;
 		cpu_context_offset = OMAP4_RM_CPU0_CPU0_CONTEXT_OFFSET;
 	} else if (soc_is_omap54xx() || soc_is_dra7xx()) {
+		omap_pm_ops.finish_suspend = omap5_finish_suspend;
 		cpu_context_offset = OMAP54XX_RM_CPU0_CPU0_CONTEXT_OFFSET;
 		enable_mercury_retention_mode();
 	}

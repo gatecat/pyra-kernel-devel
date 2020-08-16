@@ -326,6 +326,50 @@ ppa_por_params_offset:
 ENDPROC(omap4_cpu_resume)
 #endif	/* CONFIG_ARCH_OMAP4 */
 
+#ifdef CONFIG_SOC_OMAP5
+
+ENTRY(omap5_finish_suspend)
+	stmfd	sp!, {r4-r12, lr}
+	/*
+	 * HACK: COBRA-1.0BUG00167: Disable L1 cache before WFI
+	 * When data caching is disabled, no new cache lines are allocated to
+	 * the L1 data cache and L2 cache because of requests from that
+	 * processor. Other L1 caches will not allocate lines from caches
+	 * with C-bit disabled L1 memory is now Write-Back No-Allocate mode.
+	 * When CPU comes out of WFI, L1 data cache is re-enabled
+	 * when save_state is 0, check the SAR memory for HACK flag
+	 */
+	bl	omap4_get_sar_ram_base
+	mov	r8, r0
+	mrc	p15, 0, r5, c0, c0, 5		@ Read MPIDR
+	ands	r5, r5, #0x0f
+	ldreq	r0, [r8, #OMAP5_C_BIT_HACK_CPU0] @ Retrieve HACK CPU0 state
+	ldrne	r0, [r8, #OMAP5_C_BIT_HACK_CPU1] @ Retrieve HACK CPU1 state
+	cmp	r0, #0
+	beq	omap5_do_wfi
+	/*
+	 * Clear the SCTLR.C bit to prevent further data cache
+	 * allocation. Clearing SCTLR.C would make all the data accesses
+	 * strongly ordered and would not hit the cache.
+	 */
+	mrc	p15, 0, r0, c1, c0, 0
+	bic	r0, r0, #(1 << 2)		@ Disable the C bit
+	mcr	p15, 0, r0, c1, c0, 0
+	isb
+
+omap5_do_wfi:
+	bl omap_do_wfi
+
+	mrc	p15, 0, r0, c1, c0, 0
+	tst	r0, #(1 << 2)			@ Check C bit enabled?
+	orreq	r0, r0, #(1 << 2)		@ Enable the C bit
+	mcreq	p15, 0, r0, c1, c0, 0
+	isb
+	ldmfd	sp!, {r4-r12, pc}
+ENDPROC(omap5_finish_suspend)
+
+#endif
+
 #endif	/* defined(CONFIG_SMP) && defined(CONFIG_PM) */
 
 ENTRY(omap_do_wfi)

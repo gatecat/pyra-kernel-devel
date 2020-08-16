@@ -326,6 +326,7 @@ static inline void omap4_cpu_resume(void)
 #if defined(CONFIG_SOC_OMAP5) || defined(CONFIG_SOC_DRA7XX)
 void omap5_secondary_startup(void);
 void omap5_secondary_hyp_startup(void);
+int omap5_finish_suspend(unsigned long cpu_state);
 #else
 static inline void omap5_secondary_startup(void)
 {

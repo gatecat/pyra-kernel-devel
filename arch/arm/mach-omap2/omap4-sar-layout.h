@@ -25,6 +25,9 @@
 #define L2X0_AUXCTRL_OFFSET			0xff8
 #define L2X0_PREFETCH_CTRL_OFFSET		0xffc
 
+#define OMAP5_C_BIT_HACK_CPU0			0xf2C
+#define OMAP5_C_BIT_HACK_CPU1			0xf30
+
 /* CPUx Wakeup Non-Secure Physical Address offsets in SAR_BANK1 */
 #define CPU0_WAKEUP_NS_PA_ADDR_OFFSET		0xa04
 #define CPU1_WAKEUP_NS_PA_ADDR_OFFSET		0xa08
